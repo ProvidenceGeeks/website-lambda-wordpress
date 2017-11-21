@@ -1,0 +1,16 @@
+{
+  "name": "website-lambda-wordpress",
+  "version": "0.1.0",
+  "description": "Repository for Lambda functionality related to periodically fetching data from the Providence Geeks WordPress REST API.",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint *.js src/*.js",
+    "fetch": "node src/index.js"
+  },
+  "repository": "https://github.com/ProvidenceGeeks/website-lambda-meetup.git",
+  "author": "pholyoke@kenzan.com",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^4.8.0"
+  }
+}

@@ -1,2 +1,6 @@
+.DS_Store
 *.log
 .idea/
+archive/
+output/
+node_modules/

@@ -19,12 +19,11 @@ if (!isProduction) {
 }
 
 function run() {
-  const resolveAllPromises = isProduction ? resolveBlogPostsDataS3 : resolveBlogPostsDataLocal;
-  const blogPosts = getBlogPostsData();
+  const promiseResolver = isProduction ? resolveBlogPostsDataS3 : resolveBlogPostsDataLocal;
 
-  blogPosts
+  getBlogPostsData()
     .then(function (posts) {
-      resolveAllPromises(posts);
+      promiseResolver(posts);
     })
     .catch(handleError);
 }
@@ -33,7 +32,10 @@ function resolveBlogPostsDataLocal(results) {
   const outputBase = './output';
   const outputPath = `${outputBase}/${outputFile}`;
 
-  fs.mkdirSync(outputBase);
+  if (!fs.existsSync(outputBase)) {
+    fs.mkdirSync(outputBase);
+  }
+
   fs.writeFileSync(outputPath, formatResults(results));
 
   console.log(`Successfully output data to ${outputPath}`); // eslint-disable-line

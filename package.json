@@ -10,12 +10,12 @@
   "repository": "https://github.com/ProvidenceGeeks/website-lambda-meetup.git",
   "author": "pholyoke@kenzan.com",
   "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.154.0"
+  },
   "devDependencies": {
     "archiver": "^2.1.0",
     "eslint": "^4.8.0",
     "rimraf": "^2.6.2"
-  },
-  "dependencies": {
-    "aws-sdk": "^2.154.0"
   }
 }

@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint *.js src/*.js",
-    "fetch": "node src/index.js"
+    "fetch": "node src/index.js",
+    "release": "rimraf ./archive && node ./release.js"
   },
   "repository": "https://github.com/ProvidenceGeeks/website-lambda-meetup.git",
   "author": "pholyoke@kenzan.com",

@@ -5,10 +5,10 @@ const AWS = require('aws-sdk');
 const fs = require('fs');
 const http = require('http');
 const isProduction = process.env.NODE_ENV === 'production';
-const outputFile = 'blog-posts-data.json';
+const outputFile = 'wordpress-data.json';
 const s3Config = {
   bucket: 'data.pvdgeeks.org',
-  key: 'blogpost'
+  key: 'wordpress'
 };
 
 // expose handler for Lambda
@@ -22,9 +22,7 @@ function run() {
   const promiseResolver = isProduction ? resolveBlogPostsDataS3 : resolveBlogPostsDataLocal;
 
   getBlogPostsData()
-    .then(function (posts) {
-      promiseResolver(posts);
-    })
+    .then(promiseResolver)
     .catch(handleError);
 }
 

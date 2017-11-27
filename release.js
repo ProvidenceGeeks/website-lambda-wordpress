@@ -4,14 +4,19 @@
 const archiver = require('archiver');
 const AWS = require('aws-sdk');
 const fs = require('fs');
-const zipOutput = './archive/blog-posts.zip';
+const packageJson = require('./package.json');
+const archiveOutputDirectory = './archive';
+const s3Bucket = 'lambda.pvdgeeks.org';
+const s3Key = `wordpress-${packageJson.version}.zip`;
+const zipOutput = `./archive/${s3Key}`;
 
+// creating a zip is async, so we pass the release function as callback when the zip has been created
 archiveRelease(release);
 
-function archiveRelease(onEnd) {
+function archiveRelease(onDone) {
 
   // prep output directory
-  fs.mkdirSync('./archive');
+  fs.mkdirSync(archiveOutputDirectory);
 
   const output = fs.createWriteStream(zipOutput);
   const archive = archiver('zip', {
@@ -20,7 +25,7 @@ function archiveRelease(onEnd) {
 
   output.on('finish', function() {
     console.log('zip made, release it!'); // eslint-disable-line
-    onEnd();
+    onDone();
   });
 
   archive.on('error', function(err) {
@@ -34,27 +39,25 @@ function archiveRelease(onEnd) {
 
 function release() {
   const s3 = new AWS.S3();
-  const bucket = 'lambda.pvdgeeks.org';
-  const key = 'blog-posts.zip';
   const upload = fs.readFileSync(zipOutput);
 
-  s3.createBucket({ Bucket: bucket }, function(err) {
+  s3.createBucket({ Bucket: s3Bucket }, function(error) {
 
-    if (err) {
+    if (error) {
       console.log(`ERROR: ${error}.  Should probably log this somewhere`); // eslint-disable-line
     } else {
       const params = {
-        Bucket: bucket,
-        Key: key,
+        Bucket: s3Bucket,
+        Key: s3Key,
         Body: upload,
         ACL: 'public-read'
       };
 
-      s3.putObject(params, function(err) {
-        if (err) {
+      s3.putObject(params, function(error) {
+        if (error) {
           console.log(`ERROR: ${error}.  Should probably log this somewhere`); // eslint-disable-line
         } else {
-          console.log(`Successfully uploaded data to ${bucket}/${key}`); // eslint-disable-line
+          console.log(`Successfully uploaded data to ${s3Bucket}/${s3Key}`); // eslint-disable-line
         }
       });
     }

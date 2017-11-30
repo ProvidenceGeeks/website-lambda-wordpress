@@ -21,9 +21,35 @@ if (!isProduction) {
 function run() {
   const promiseResolver = isProduction ? resolveBlogPostsDataS3 : resolveBlogPostsDataLocal;
 
-  getBlogPostsData()
-    .then(promiseResolver)
-    .catch(handleError);
+  Promise.all([getMediaData(), getAuthorData()]).then(results => {
+    let mediaPromisesArray = results[0];
+    let authorPromisesArray = results[1];
+    let blogPostsData = getBlogPostsData();
+
+    // Resolve array of promises for media data, and map to each blog post.
+    Promise.all(mediaPromisesArray).then(mediaResults => {
+      blogPostsData.then(blogPosts => {
+        blogPosts.map(blogPost => {
+          blogPost.media_details = mediaResults.find((mediaItem) => { // eslint-disable-line camelcase
+            return mediaItem.id === blogPost.id;
+          }).media_details; // eslint-disable-line camelcase
+        });
+      });
+    });
+
+    // Resolve array of promises for author data, and map to each blog post.
+    Promise.all(authorPromisesArray).then(authorResults => {
+      blogPostsData.then(blogPosts => {
+        blogPosts.map(blogPost => {
+          blogPost.author_name = authorResults.find((authorItem) => { // eslint-disable-line camelcase
+            return authorItem.id === blogPost.id;
+          }).author;
+        });
+
+        promiseResolver(blogPosts);
+      });
+    });
+  });
 }
 
 function resolveBlogPostsDataLocal(results) {
@@ -72,6 +98,60 @@ function getBlogPostsData() {
       return results;
     })
     .catch(handleError);
+}
+
+function getMediaData() {
+  let mediaList = [];
+
+  return new Promise((resolve) => {
+    getBlogPostsData()
+      .then((blogPosts) => {
+        blogPosts.map(post => {
+          mediaList.push(new Promise((resolve) => {
+            let hasMedia = post.featured_media > 0;
+            let postMedia = {};
+
+            if (hasMedia) {
+              getData(post._links['wp:featuredmedia']['0'].href).then((results) => { // eslint-disable-line no-underscore-dangle
+                postMedia.id = post.id;
+                postMedia.media_details = results.media_details.sizes; // eslint-disable-line camelcase
+                resolve(postMedia);
+              });
+            } else {
+              resolve({
+                id: post.id,
+                media_details: {} // eslint-disable-line camelcase
+              });
+            }
+          }));
+        });
+        resolve(mediaList);
+      })
+      .catch(handleError);
+  });
+}
+
+function getAuthorData() {
+  let authorList = [];
+  let postAuthor = {};
+
+  return new Promise((resolve) => {
+    getBlogPostsData()
+      .then((blogPosts) => {
+        blogPosts.map(post => {
+          authorList.push(new Promise((resolve) => {
+            getData(post._links.author[0].href).then((results) => { // eslint-disable-line no-underscore-dangle
+              postAuthor.id = post.id;
+              postAuthor.author = results.name; // eslint-disable-line camelcase
+              resolve(postAuthor);
+              postAuthor = {};
+            });
+          }));
+        });
+        resolve(authorList);
+      })
+      .catch(handleError);
+  });
 }
 
 function getData(url) {

@@ -3,9 +3,10 @@
  */
 const AWS = require('aws-sdk');
 const fs = require('fs');
-const http = require('http');
+const http = require('https');
 const isProduction = process.env.NODE_ENV === 'production';
 const outputFile = 'wordpress-data.json';
+const wordpressEndpoint = 'https://blog.pvdgeeks.org/wp-json/wp/v2/posts';
 const s3Config = {
   bucket: 'data.pvdgeeks.org',
   key: 'wordpress'
@@ -93,7 +94,7 @@ function resolveBlogPostsDataS3(results) {
 }
 
 function getBlogPostsData() {
-  return getData('http://blog.pvdgeeks.org/wp-json/wp/v2/posts')
+  return getData(wordpressEndpoint)
     .then(function (results) {
       return results;
     })

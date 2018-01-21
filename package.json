@@ -1,6 +1,6 @@
 {
   "name": "website-lambda-wordpress",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Repository for Lambda functionality related to periodically fetching data from the Providence Geeks WordPress REST API.",
   "main": "index.js",
   "scripts": {
